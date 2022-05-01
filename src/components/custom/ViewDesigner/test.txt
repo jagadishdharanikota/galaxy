@@ -1,0 +1,463 @@
+describe('ViewDesigner ', () => {
+	let container;
+	let store;
+	let viewDesignerProps;
+	beforeEach(() => {
+		container = document.createElement('div');
+		document.body.appendChild(container);
+
+		store = mockStore(
+			{
+				ContainerGroup: {
+					activeTab: 1,
+					tabs: []
+				},
+				ContainerGroupState: {}
+			}
+		);
+
+		viewDesignerProps = {
+			CreateViewTemplate: {
+				[APP_PROPS.METADATA]: {
+					_id: 'CreateViewTemplate',
+					name: 'Creates new view',
+					description: 'View UI to create new view',
+					type: 'view',
+					category: 'layout',
+					[APP_PROPS.CONFIG]: {
+						children: [
+							{
+								component: 'Layout_1*1',
+								category: 'layout',
+								key: '1588019505759',
+								columns: [
+									{
+										children: [
+											{
+												component: 'Input',
+												category: 'control',
+												key: '1588019605334',
+												[APP_PROPS.CONFIG]: {
+													label: 'Name',
+													propertyRef: '',
+													position: 'vertical'
+												}
+											},
+											{
+												component: 'Input',
+												category: 'control',
+												key: '1588019932019',
+												[APP_PROPS.CONFIG]: {
+													label: 'component',
+													propertyRef: '',
+													position: 'vertical'
+												}
+											},
+											{
+												component: 'TextArea',
+												category: 'control',
+												key: '1588019933863',
+												[APP_PROPS.CONFIG]: {
+													label: 'Description',
+													propertyRef: '',
+													position: 'vertical'
+												}
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					dataSource: []
+				},
+				propsContext: [],
+			}
+		};
+
+		store.dispatch = jest.fn();
+	});
+
+	afterEach(() => {
+		document.body.removeChild(container);
+		container = null;
+	});
+
+	it('should add the new 1*1 layout to the designer on clicking 1*1 button in toolbar', () => {
+		act(() => {
+			ReactDOM.render(<Provider store={store}><ViewDesignerWithActions {...viewDesignerProps.CreateViewTemplate} propsContext={["ContainerGroupState", "CreateViewTemplate"]} /></Provider>, container);
+		});
+
+		expect(container.children.length).toBe(1);
+		expect(container.querySelector('.view-designer')).not.toBeNull();
+
+		const layoutButton1By1 = container.querySelector('div.builder-toolbar button[data-identifier="1*1"]');
+		expect(layoutButton1By1).not.toBeNull();
+
+		act(() => {
+			ReactTestUtils.Simulate.click(layoutButton1By1);
+		});
+
+		// Incomplete test
+		expect(store.dispatch).toHaveBeenCalledTimes(1);
+		/*
+		expect(store.dispatch).toHaveBeenCalledWith({
+			type: 'ADD_DESIGN_ITEM',
+			payload: {
+				path: [
+					'ContainerGroupState',
+					'CreateViewTemplate',
+					[APP_PROPS.CONFIG],
+					'children',
+					0
+				],
+				operation: 'SIBLING_BELOW',
+				componentState: {
+					component: '1*1',
+					category: 'layout',
+					key: '1590558913707',
+					columns: [
+						{
+							children: []
+						}
+					]
+				}
+			}
+		});
+		*/
+		//data-row="1.1.3"
+	});
+
+	it('should add the new input control to the designer on clicking Input button in toolbar', () => {
+		act(() => {
+			ReactDOM.render(<Provider store={store}><ViewDesignerWithActions {...viewDesignerProps.CreateViewTemplate} propsContext={["ContainerGroupState", "CreateViewTemplate"]} /></Provider>, container);
+		});
+		expect(container.children.length).toBe(1);
+		expect(container.querySelector('.view-designer')).not.toBeNull();
+
+		const Layout1 = container.querySelector('#CreateViewTemplate div[data-row="1"]');
+		const InputButton = container.querySelector('.builder-toolbar button[data-identifier="Input"]');
+		expect(InputButton).not.toBeNull();
+		act(() => {
+			ReactTestUtils.Simulate.click(Layout1);
+			ReactTestUtils.Simulate.click(InputButton);
+		});
+
+		// Adding Input field should an action with ADD_DESIGN_ITEM
+		expect(store.dispatch).toHaveBeenCalledTimes(1);
+	});
+
+	it('should remove selected item from the designer on clicking delete button in toolbar', () => {
+		act(() => {
+			ReactDOM.render(<Provider store={store}><ViewDesignerWithActions {...viewDesignerProps.CreateViewTemplate} propsContext={["ContainerGroupState", "CreateViewTemplate"]} /></Provider>, container);
+		});
+
+		expect(container.children.length).toBe(1);
+		expect(container.querySelector('.view-designer')).not.toBeNull();
+
+		const deleteButton = container.querySelector('div.btn-toolbar button[title="Delete"]');
+		const textArea = container.querySelector('#CreateViewTemplate div[data-row="1.1.3"]')
+		expect(deleteButton).toBeDefined();
+		expect(textArea).toBeDefined();
+		act(() => {
+			ReactTestUtils.Simulate.click(textArea);
+			ReactTestUtils.Simulate.click(deleteButton);
+		});
+
+		expect(store.dispatch).toHaveBeenCalledTimes(1);
+		// ToDo: Fix below
+		/*expect(store.dispatch).toHaveBeenCalledWith({
+			type: 'REMOVE_DESIGN_ITEM',
+			payload: {
+				path: [
+					'ContainerGroupState',
+					'CreateViewTemplate',
+					[APP_PROPS.CONFIG],
+					'children',
+					0,
+					'columns',
+					0,
+					'children',
+					2
+				],
+				operation: 'REMOVE'
+			}
+		});*/
+	});
+
+	it('should move selected item up in the designer on clicking move button in toolbar', () => {
+		act(() => {
+			ReactDOM.render(<Provider store={store}><ViewDesignerWithActions {...viewDesignerProps.CreateViewTemplate} propsContext={["ContainerGroupState", "CreateViewTemplate"]} /></Provider>, container);
+		});
+
+		const deleteButton = container.querySelector('div.btn-toolbar button[title="Move up"]');
+		const textArea = container.querySelector('#CreateViewTemplate div[data-row="1.1.3"]')
+		expect(deleteButton).not.toBeNull();
+		expect(textArea).not.toBeNull();
+		act(() => {
+			ReactTestUtils.Simulate.click(textArea);
+			ReactTestUtils.Simulate.click(deleteButton);
+		});
+
+		expect(store.dispatch).toHaveBeenCalledTimes(1);
+		/*expect(store.dispatch).toHaveBeenCalledWith({
+			type: 'MOVE_DESIGN_ITEM',
+			payload: {
+				path: [
+					'ContainerGroupState',
+					'AppView1',
+					[APP_PROPS.CONFIG],
+					'children',
+					1
+				],
+				operation: 'MOVE_UP'
+			}
+		});*/
+	});
+
+	it('should insert the blinker at the end of the layout', () => {
+		act(() => {
+			ReactDOM.render(<Provider store={store}><ViewDesignerWithActions {...viewDesignerProps.CreateViewTemplate} propsContext={["ContainerGroupState", "CreateViewTemplate"]} /></Provider>, container);
+		});
+
+		const layoutRow = container.querySelector('#CreateViewTemplate div[data-row="1"]');
+		const layoutColumn = container.querySelector('#CreateViewTemplate div[data-row="1"] div[data-column="1.1"]');
+		expect(layoutRow).not.toBeNull();
+		expect(layoutRow.children.length).toBe(1);
+		expect(layoutColumn).not.toBeNull();
+		expect(layoutColumn.children.length).toBe(3);
+		act(() => {
+			ReactTestUtils.Simulate.click(layoutColumn);
+		});
+
+		expect(layoutColumn.children.length).toBe(4);
+	});
+
+	it('should insert the blinker at the end of the layout on clicking the layout', () => {
+		act(() => {
+			ReactDOM.render(<Provider store={store}><ViewDesignerWithActions {...viewDesignerProps.CreateViewTemplate} propsContext={["ContainerGroupState", "CreateViewTemplate"]} /></Provider>, container);
+		});
+
+		const layoutRow = container.querySelector('#CreateViewTemplate div[data-row="1"]');
+		const layoutColumn = container.querySelector('#CreateViewTemplate div[data-row="1"] div[data-column="1.1"]');
+		expect(layoutRow).not.toBeNull();
+		expect(layoutRow.children.length).toBe(1);
+		expect(layoutColumn).not.toBeNull();
+		expect(layoutColumn.children.length).toBe(3);
+		act(() => {
+			ReactTestUtils.Simulate.click(layoutColumn);
+		});
+
+		expect(layoutColumn.children.length).toBe(4);
+		// Check the blinker is inserted at the end when clicked on layout
+		expect(layoutColumn.children[3]).toBe(layoutColumn.querySelector("#CreateViewTemplate-insertion-point"));
+	});
+
+	test.todo("should remove the tab and its content on clicking close - test is still pending");
+});
+
+// Using Enzyme API's
+describe("ViewDesigner ", () => {
+	let container;
+
+	let viewDesignerProps;
+	beforeEach(() => {
+		container = document.createElement('div');
+		document.body.appendChild(container);
+
+		viewDesignerProps = {
+			_id: 'CreateViewTemplate',
+			name: 'Creates new view',
+			description: 'View UI to create new view',
+			type: 'view',
+			category: 'layout',
+			[APP_PROPS.CONFIG]: {
+				children: [
+					{
+						component: 'Layout_1*1',
+						category: 'layout',
+						key: '1588019505759',
+						columns: [
+							{
+								children: [
+									{
+										component: 'Input',
+										category: 'control',
+										key: '1588019605334',
+										[APP_PROPS.CONFIG]: {
+											label: 'Name',
+											propertyRef: '',
+											position: 'vertical'
+										}
+									},
+									{
+										component: 'Input',
+										category: 'control',
+										key: '1588019932019',
+										[APP_PROPS.CONFIG]: {
+											label: 'component',
+											propertyRef: '',
+											position: 'vertical'
+										}
+									},
+									{
+										component: 'TextArea',
+										category: 'control',
+										key: '1588019933863',
+										[APP_PROPS.CONFIG]: {
+											label: 'Description',
+											propertyRef: '',
+											position: 'vertical'
+										}
+									}
+								]
+							}
+						]
+					}
+				]
+			},
+			propsContext: [],
+		};
+
+	});
+
+	afterEach(() => {
+		document.body.removeChild(container);
+		container = null;
+	});
+	it('should show the configuration on input field on clicking it', () => {
+		//const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+		//const secondLayoutElement = wrapper.find('#CreateViewTemplate div[data-row="1"] div[data-column="1.1"]');
+
+		//expect(secondLayoutElement).to.have.lengthOf(1);
+		//secondLayoutElement.simulate('click');
+		//expect(wrapper.instance().handleDesignerAreaClick).toHaveBeenCalled();
+	});
+});
+
+describe('ViewDesigner API', () => {
+	let viewDesignerProps;
+	beforeEach(() => {
+		// setup a DOM element as a render target
+		container = document.createElement("div");
+		document.body.appendChild(container);
+		viewDesignerProps = designerState.ContainerGroupState.NewView;
+	});
+
+	afterEach(() => {
+		// cleanup on exiting
+		unmountComponentAtNode(container);
+		container.remove();
+		container = null;
+	});
+
+	it("should have node with .designer-area", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+		expect(wrapper.find(Header).length).toBe(1);
+		expect(wrapper.find(Tabs).length).toBe(1);
+	});
+
+	it("should have only one instance of CtrlsToolbar", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+		expect(wrapper.find(CtrlsToolbar).length).toEqual(1);
+	});
+
+	it("getItemInfo should return null for invalid target", () => {
+		const wrapper = shallow(<ViewDesigner {...viewDesignerProps} />);
+		let targetElement;
+		let itemInfo = wrapper.instance().getItemInfo(targetElement);
+
+		expect(itemInfo).toEqual(null);
+	});
+
+	it("getItemInfo should return category and identifier", () => {
+		const wrapper = shallow(<ViewDesigner {...viewDesignerProps} />);
+		let targetElement = document.createElement('div');
+		targetElement.setAttribute('data-category', 'layout');
+		targetElement.setAttribute('data-identifier', '1*2');
+		let itemInfo = wrapper.instance().getItemInfo(targetElement);
+
+		expect(itemInfo.category).toEqual('layout');
+		expect(itemInfo.identifier).toEqual('1*2');
+	});
+
+	it("getInsertionInfo should return {operation: SIBLING_BELOW, path: 1} properties", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+
+		let mainElement = document.createElement('div');
+		mainElement.setAttribute('class', 'designer-area');
+
+		let rowElement = document.createElement('div');
+		rowElement.setAttribute('data-row', '1');
+
+		let columnElement = document.createElement('div');
+		columnElement.setAttribute('class', 'border col-md-12');
+		columnElement.setAttribute('data-column', '1.1');
+		rowElement.appendChild(columnElement);
+
+		let insertionPoint = document.createElement('div');
+		insertionPoint.setAttribute('id', 'insertion-point');
+
+		mainElement.appendChild(rowElement);
+		mainElement.appendChild(insertionPoint);
+
+		let insertionInfo = wrapper.instance().getInsertionInfo(insertionPoint);
+
+		expect(insertionInfo.operation).toEqual('SIBLING_BELOW');
+		expect(insertionInfo.path).toEqual('1');
+	});
+
+	it("getInsertionInfo should return {operation: CHILD, path: 1.1} properties", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+
+		let mainElement = document.createElement('div');
+		mainElement.setAttribute('class', 'designer-area');
+
+		let rowElement = document.createElement('div');
+		rowElement.setAttribute('data-row', '1');
+
+		let columnElement = document.createElement('div');
+		columnElement.setAttribute('class', 'border col-md-12');
+		columnElement.setAttribute('data-column', '1.1');
+		rowElement.appendChild(columnElement);
+
+		let insertionPoint = document.createElement('div');
+		insertionPoint.setAttribute('id', 'insertion-point');
+
+		mainElement.appendChild(rowElement);
+		columnElement.appendChild(insertionPoint);
+
+		let insertionInfo = wrapper.instance().getInsertionInfo(insertionPoint);
+
+		expect(insertionInfo.operation).toEqual('CHILD');
+		expect(insertionInfo.path).toEqual('1.1');
+	});
+
+
+	it("getPath(1) should return ['children', 0]", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+		let path = wrapper.instance().getPath('1');
+
+		expect(path[0]).toEqual('children');
+		expect(path[1]).toEqual(0);
+	});
+
+	it("getPath(2) should return ['children', 1]", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+		let path = wrapper.instance().getPath('2');
+
+		expect(path[0]).toEqual('children');
+		expect(path[1]).toEqual(1);
+	});
+
+	it("getPath(1.1) should return ['children', 0, 'columns', 0]", () => {
+		const wrapper = mount(<ViewDesigner {...viewDesignerProps} />);
+		let path = wrapper.instance().getPath('1.1');
+
+		expect(path[0]).toEqual('children');
+		expect(path[1]).toEqual(0);
+		expect(path[2]).toEqual('columns');
+		expect(path[3]).toEqual(0);
+	});
+
+});

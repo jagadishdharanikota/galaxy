@@ -1,26 +1,13 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import AppContainer from './components/containers/AppContainer';
+import ModalManager from './components/containers/Modal/ModalContext';
+// import { withActions } from './HOCs';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = (props) => {
+  if (Object.keys(props).length > 0) {
+    return <ModalManager>{React.createElement(AppContainer, props)}</ModalManager>;
+  }
+  return '';
+};
 
 export default App;
